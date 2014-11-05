@@ -37,7 +37,9 @@ pro pix_m31_simple_csv
   logdep=alog10(dep[where ( dep GT 0 AND gas_mass_sun GT 0 )])
   logindep=alog10(gas_mass_sun[where (dep GT 0 AND gas_mass_sun GT 0 )])
   ; aa=where(check ne check); and logindep GT -1,count)
-  
+  pos=where(logindep GT -1)
+  logdep=logdep[pos]
+  logindep=logindep[pos]
   dev_sfr=stddev(logdep)
   dev_gas=stddev(logindep)
   len=n_elements(logindep)
