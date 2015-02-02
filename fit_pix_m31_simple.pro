@@ -3,12 +3,13 @@ pro fit_pix_m31_simple
  ; indep=mrdfits('/Users/saharrahmani/Desktop/hi/reg_to_hi_idl/co_reg_hi_sb.fits',0,h_indep)
   ;indep=mrdfits('~/Desktop/proms/to_36/co_reg_36_sb.fits',0,h_indep)
   indep*=2d20
-  dep=mrdfits('~/Desktop/project/proms/h2/reg_to_co/sfr_fir_reg_co_sb.fits',0,h_dep)
-  ; dep=mrdfits('/Users/saharrahmani/Desktop/hi/reg_to_hi_idl/fir_reg_hi_sb.fits',0,h_dep)
+ ; dep=mrdfits('~/Desktop/project/proms/h2/reg_to_co/sfr_fuv_hao_reg_co_sb.fits',0,h_dep)
+   dep=mrdfits('~/Desktop/project/proms/h2/reg_to_co/sfr_fir_reg_co_sb.fits',0,h_dep)
   ;dep=mrdfits('~/Desktop/final_before_conv/sfr_halpha_corr_NII_reg_to_co_sb.fits',0,h_dep)
  ; check = mrdfits('/Users/saharrahmani/Desktop/proms/idl_res/halpha_reg_sb.fits',0,h)
-
- ;stop
+ ;err_sfr=mrdfits('~/Desktop/project/proms/h2/reg_to_co/err_sfr_reg_co_sb.fits',0)
+ err_sfr=mrdfits('~/Desktop/project/proms/h2/reg_to_co/err_sfr_fir_reg_co_sb.fits',0)
+ stop
   mass_one=2.34d*1.67d-27
   size_of_arcsec= 3.4975200d
   pix_size=7.9999993d
@@ -31,19 +32,30 @@ pro fit_pix_m31_simple
   dep= dep/area      ;unit of dependet map per pc^2
   indep= indep/area  ;unit of independate map per pc^2
  gas_mass_sun= gas_mass_sun/area  ;gas surface density in mass per mass of sun per pc^2
+ err_sfr/=area
   ;------------------------------------------------------
   ;fit the sfr laws
   ;------------------------------------------------------ 
   logdep=alog10(dep[where ( dep GT 0 AND gas_mass_sun GT 0 )])
   logdep2=alog10(dep)
   logindep=alog10(gas_mass_sun[where (dep GT 0 AND gas_mass_sun GT 0 )])
+  dep2 = dep[where (dep GT 0 AND gas_mass_sun GT 0)]
+   err_sfr_f = abs(err_sfr/(alog(10)*dep2))
  ; aa=where(check ne check); and logindep GT -1,count)
+ pos=where(logindep GT -1)
 
-pos=where(logindep GT -1)
-pos2=where(logindep LT -2.5)
-Weights=fltarr(n_elements(logdep[pos])-1)+1
-;Weights[pos2]*=0.00001d
-measure_errors = sqrt(1/Weights)
+;  logdep=logdep[pos]
+;  logindep=logindep[pos]
+;  dev_sfr=stddev(logdep)
+;  dev_gas=stddev(logindep)
+;  len=n_elements(logindep)
+;  err_sfr = dev_sfr*(RANDOMu(seed, len, POISSON=1.0, /DOUBLE)-1.0+1d-14)
+;  err_gas = dev_gas*(RANDOMu(seed, len, POISSON=1.0, /DOUBLE)-1.0+1d-14)
+;  err_sfr*=logdep
+;  err_gas*=logindep
+;  index=intarr(len)+31
+Weights=err_sfr_f[pos]
+measure_errors = sqrt(1/abs(Weights))
   result = REGRESS(logindep[pos], logdep[pos], SIGMA=sigma, CONST=const, $
     MEASURE_ERRORS=measure_errors)
   PRINT, 'Constant: ', const
@@ -51,6 +63,7 @@ measure_errors = sqrt(1/Weights)
   PRINT, 'Standard errors: ', sigma
   PRINT, '                                 '
   PRINT,';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
+  stop
   ;result = REGRESS(logindep, logdep, SIGMA=sigma, CONST=const, $
    ; MEASURE_ERRORS=measure_errors)
   ;PRINT, 'Constant: ', const
@@ -84,7 +97,6 @@ PRINT, 'avg N is:', avg(N,/nan)
 ;------------------------------------------------------
 ;ploting
 ;------------------------------------------------------
-
 ;Writefits, out,N
 ;set_plot_ps,out_fit +'.ps'
 colours

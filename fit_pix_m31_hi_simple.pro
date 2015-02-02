@@ -58,7 +58,7 @@ pro fit_pix_m31_hi_simple,out
   logindep=double(logindep)
   ;pos=where(logindep GT min(indep))
   ;pos2=where(logindep LT -2.5)
-  Weights=fltarr(n_elements(logdep)-1)+1
+  Weights=fltarr(n_elements(logdep)-1)+randomu(see,n_elements(logdep))
   ;Weights[pos2]*=0.00001d
   measure_errors = sqrt(1/Weights)
   result = REGRESS(logindep, logdep, SIGMA=sigma, CONST=const, $
@@ -68,6 +68,7 @@ pro fit_pix_m31_hi_simple,out
   PRINT, 'Standard errors: ', sigma
   PRINT, '                                 '
   PRINT,';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'
+  stop
   ;result = REGRESS(logindep, logdep, SIGMA=sigma, CONST=const, $
   ; MEASURE_ERRORS=measure_errors)
   ;PRINT, 'Constant: ', const
